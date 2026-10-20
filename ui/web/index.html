@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>漫画实时翻译</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body>
+  <header>
+    <h1>漫画实时翻译</h1>
+    <div class="controls">
+      <label>通道
+        <select id="provider">
+          <option value="free">free（Ollama 免费）</option>
+          <option value="paid">paid（DeepSeek 付费）</option>
+          <option value="mock">mock（原样回填）</option>
+        </select>
+      </label>
+      <button id="pick" class="primary">屏幕截图</button>
+      <div class="region">
+        <input id="rx" type="number" placeholder="左">
+        <input id="ry" type="number" placeholder="上">
+        <input id="rw" type="number" placeholder="宽">
+        <input id="rh" type="number" placeholder="高">
+      </div>
+      <button id="run" class="accent">翻译当前页</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="preview-panel">
+      <div class="preview-box">
+        <img id="preview" alt="翻译预览">
+        <div class="placeholder" id="placeholder">点「屏幕截图」直接拖动框选，松开后点「翻译当前页」<br>无需放大窗口；Esc / 右键取消</div>
+      </div>
+    </section>
+    <aside class="list-panel">
+      <h2>原文 → 译文</h2>
+      <div id="pairs" class="pairs"></div>
+    </aside>
+  </main>
+
+  <footer>
+    <div id="log" class="log"></div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

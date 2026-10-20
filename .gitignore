@@ -1,0 +1,28 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# ===== 运行时数据（翻译缓存、失败样本）=====
+cache/
+
+# ===== 调试/演示产物 =====
+outputs/
+output*.png
+
+# ===== 本地模型权重（体积大，首次运行自动下载并做 SHA256 校验）=====
+*.pt
+*.pth
+*.onnx
+
+# ===== 本地工具/私密笔记 =====
+.workbuddy-ai/
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

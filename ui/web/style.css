@@ -1,0 +1,158 @@
+:root {
+  --bg: #1e1f24;
+  --panel: #282a31;
+  --panel-2: #30333c;
+  --text: #e6e7ea;
+  --muted: #9aa0ab;
+  --brand: #7c5cff;
+  --brand-2: #9d85ff;
+  --border: #3a3d47;
+  --ok: #4cc38a;
+  --err: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+h1 { font-size: 16px; margin: 0; }
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.controls label { color: var(--muted); }
+
+select, input {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.region input { width: 64px; }
+
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #fff;
+}
+
+button.primary { background: var(--brand); }
+button.primary:hover { background: var(--brand-2); }
+button.accent { background: #0f8a5f; }
+button.accent:hover { background: #12a473; }
+
+main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.preview-panel {
+  flex: 1;
+  padding: 16px;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-box {
+  position: relative;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+#preview {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: none;
+}
+
+.placeholder {
+  color: var(--muted);
+  padding: 40px;
+}
+
+.list-panel {
+  width: 300px;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+}
+
+.list-panel h2 {
+  font-size: 14px;
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.pairs {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border-bottom: 1px dashed var(--border);
+}
+
+.pair .src { color: var(--muted); font-size: 13px; }
+.pair .arrow { display: none; }
+.pair .dst { color: var(--text); font-size: 15px; }
+
+footer {
+  padding: 8px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+.log {
+  max-height: 120px;
+  overflow: auto;
+  font: 12px "Consolas", "Microsoft YaHei", monospace;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.log .err { color: var(--err); }
+.log .ok { color: var(--ok); }

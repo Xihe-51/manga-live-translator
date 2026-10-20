@@ -1,0 +1,24 @@
+# 漫画实时翻译 —— 依赖清单
+
+# 图像处理
+opencv-python
+numpy
+Pillow
+PyYAML
+
+# OCR（PaddleOCR 3.x，适配 Python 3.13 + paddlepaddle 3.x）
+paddleocr>=3.0
+paddlepaddle>=3.0
+
+# LLM 翻译（走 OpenAI 兼容接口，免费/付费通用）
+requests
+
+# 抓屏与翻页检测
+mss
+imagehash
+
+# 原生设置页与透明实时阅读层（main.py --gui 必需）
+PySide6>=6.8
+
+# ===== 可选：按需安装 =====
+# 高质量抹字（inpaint.method 设为 lama 时才需要）:    torch

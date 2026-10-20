@@ -1,0 +1,178 @@
+# 漫画实时翻译 —— 配置文件
+# 注意：这里的 api_key 都是占位符，别把真实 key 提交到仓库
+
+# ===== 抓屏 / 区域锁定（后续阶段接入）=====
+capture:
+  interval_ms: 500         # 抓屏间隔（毫秒）
+  region: [0, 0, 0, 0]     # [左, 上, 宽, 高]，0 表示后续手动锁定
+
+# ===== 透明实时阅读（GUI）=====
+reading:
+  stable_frames: 2         # 连续稳定两帧后识别；滚动期间清除旧译文
+  pixel_threshold: 20      # 判定变化的灰度差
+  change_ratio: 0.003      # 相对稳定参考帧，变化像素超过 0.3% 即换页
+  page_cache_size: 3       # 内存中保留最近3页，回看不重复识别
+  border_visible: false   # 默认隐藏区域框，不遮挡漫画
+  hide_text: false
+  original_key: "tab"     # 按住该键临时显示原图对照（松开恢复译文）；留空或 null 关闭
+  fade_in: true           # 新回填的译文淡入并短暂高亮，翻页后便于定位；关掉则直接显示
+
+# ===== 翻页检测 =====
+page_change:
+  method: imagehash        # imagehash（感知哈希距离）或 frame_diff（帧差像素占比）
+  threshold: 8             # imagehash 阈值：哈希距离超过即认为翻页
+  diff_threshold: 0.02     # frame_diff 阈值：变化像素占比超过即认为翻页（默认 2%）
+
+# ===== OCR =====
+ocr:
+  lang: japan              # PaddleOCR 语言（日文）；指定下方模型名后该项会被忽略
+  merge_vertical_columns: true  # 紧邻竖排列按右→左合成整句；误合时可关闭
+  # 模型档位：mobile 档实测比默认 medium 快 3~6 倍，横排/竖排/密集图识别结果一致
+  # 想换回默认档就把下面两行设为 null（会按 lang 走 medium，明显更慢）
+  det_model: PP-OCRv5_mobile_det
+  rec_model: PP-OCRv5_mobile_rec
+  # 竖排方向分类（判断文本行是否被倒置）。实测关掉能省约 18% 识别耗时，
+  # 但代价是同一处气泡可能被读成"高置信垃圾"（如 はいゆずも行<1，conf 0.83）——
+  # 置信度够高会绕过下面的 min_score，被当成正常对白翻成中文盖上去。
+  # 盖错译文比不盖更糟，故默认保持 true；追求速度且能接受偶发误译时可改 false。
+  textline_orientation: true
+  # 检测输入边长上限。实测从 960 降到 640 基本不省时间（12.4s vs 12.6s），
+  # 因为瓶颈在识别模型而非检测；保留 960 以照顾小字。
+  det_limit_side_len: 960
+  # 识别置信度低于此值的块直接丢弃（保留原文不抹字）。真实漫画页实测 0.50 以下
+  # 全是垃圾（"n"、"D·"、"S-我へi"、"□"），0.70 以上才是正常对白。
+  # 低置信块送去翻译只会拿回一句垃圾并盖住原文，甚至换来模型一句"无法辨认"。
+  # 若发现正常小字被误丢，把这里调低（如 0.4）；想完全不过滤就设 0。
+  min_score: 0.6
+
+# ===== 覆盖 / 抹字 =====
+inpaint:
+  method: cover            # cover（默认，纯色气泡同色覆盖，非纯色自动局部 inpaint）/ cv2（整图 inpaint）/ lama（LaMa 深度学习抹字）
+  pad: 3                   # 覆盖/抹字时向外扩的像素
+  cover_ring_width: 5      # cover 采样周边背景色的环形宽度（判断气泡颜色）
+  cover_flat_std: 12       # 环形区颜色标准差阈值：≤ 走同色覆盖，> 自动回退局部 inpaint
+  grain: false             # 默认不制造随机噪点；仅对确有细颗粒的背景手动开启，不能用于重建网点/线条
+  lama_model: null         # LaMa 权重路径（big-lama.pt）；null 时首次运行自动下载（约 200MB，需要网络）；权重会做 SHA256 校验，损坏会明确报错
+
+# ===== 翻译 LLM（免费 / 付费可切换）=====
+llm:
+  # 用哪个：free = 本地免费模型 / paid = 付费云端 API / mock = 原样回填（测试用）
+  provider: free
+
+  # 原文语言：auto = 自动识别（假名→日文、谚文→韩文、纯汉字→中文不翻、拉丁→英文）
+  # 也可固定为 ja / ko / en / ru，避免自动判断失误
+  # 读日漫建议固定 ja：纯汉字日文人名（東堂容太）在 auto 下会被当成中文跳过，
+  # 统计模型也分不出来（日文汉字与中文汉字字形重合）。
+  source_lang: auto
+
+  # 每批最多翻几句。批量一大，7B 级模型就会串扰：把假名转写成罗马字
+  # （こそり→kosoi）、混进英文单词（大丈夫大丈夫ぅ→"没事没Thing"）、
+  # 把邻句词意带过来（幼馴染→"小学同学"）。
+  # 16 句真实漫画页对照（各跑两轮，含拉丁字母的句数 / 耗时）：
+  #   每批 1 句 0/0 / 6.2s，2 句 0/0 / 4.7s，4 句 1/1 / 4.2s，8 句 1/2 / 3.8s。
+  # 取 2：污染归零，只比每批 8 句慢约 1 秒。调到 8 能省一点时间但会明显变差。
+  batch_size: 2
+
+  # 提示词模板（留空则用代码内置默认）。可用占位符：
+  #   $from    原文语言（如"日文"）        $to   目标语言（简体中文）
+  #   $detect  自动识别到的语言（同 $from）  $text 原文（批量时是带序号的整段）
+  # 直接复制默认值出来改就行，改完不用重启程序。
+  prompts:
+    system: null
+    batch: null
+
+  # 请求参数透传：这里写什么就原样并入 OpenAI 请求体（如 temperature/top_p/
+  # max_tokens），缺省 temperature=0.2；调参改这里，不用动代码。
+  options: {}
+
+  # 免费方案：本地 Ollama（完全免费，需先装 Ollama 并 pull 模型）
+  free:
+    base_url: http://localhost:11434/v1
+    api_key: "ollama"
+    model: qwen2.5:7b
+
+  # 付费方案：DeepSeek 等 OpenAI 兼容接口
+  paid:
+    base_url: https://api.deepseek.com/v1
+    api_key: "填你的key"
+    model: deepseek-chat
+
+  # 测试方案：本地无 LLM/key 时原样回填，用来验证 OCR→抹字→排版 链路
+  mock:
+    base_url: null
+    api_key: null
+    model: null
+
+  # 供应商预设：设置页「预设」下拉一键填入对应通道的地址、模型与请求参数。
+  # options 是整体替换（不是叠加），切换预设不会残留上一个预设的参数；
+  # 预设只对本次会话生效，想永久保存就把选中的值抄进上面的通道配置。
+  presets:
+    - name: DeepSeek（推荐）
+      provider: paid
+      base_url: https://api.deepseek.com/v1
+      model: deepseek-chat
+      options:
+        temperature: 0                # 翻译不需要创造性，温度取 0 结果更稳定
+        thinking: {type: disabled}    # 关闭思考模式，避免译文混入思考过程
+    - name: 本地 Ollama
+      provider: free
+      base_url: http://localhost:11434/v1
+      model: qwen2.5:7b
+      options:
+        temperature: 0
+
+# ===== 术语表（可选）=====
+# 固定某些词的译法，出现时强制采用、不许改写。适合人名、专有名词，以及
+# 模型老翻错的常用词。留空即不启用。
+# 注：把 llm.batch_size 降到 2 之后，模型自己就能把「幼馴染」译成"青梅竹马"了
+#（批量 8 时会被邻句串扰成"小学同学"）。术语表留给真正顽固的词，比如人名。
+# 写法：原文: 译文
+glossary: {}
+  # 幼馴染: 青梅竹马
+  # 先輩: 学长
+  # 鮎加波: 鲇加波
+
+# ===== 翻译缓存 =====
+# 把「原文 → 译文」对照持久化成 JSON：翻回已看过的页、重读旧内容时直接命中，
+# 不再调用翻译服务。按 provider+地址+模型分桶，换模型不会误用旧译文；
+# 想强制全部重翻，删掉缓存文件即可。缺少本节配置时缓存整体关闭。
+cache:
+  enabled: true
+  path: cache/translations.json   # 相对项目根目录
+  max_entries: 5000               # 每个模型桶最多保留多少句，超出淘汰最早写入的
+
+# ===== 失败样本留存 =====
+# 把被清洗掉/判为无效的模型输出（思考泄漏、JSON 壳、乱码、原样返回的回声）按天
+# 存成 JSONL（时间 + 原因 + 原文 + 模型返回），事后回看模型到底吐了什么、据此调
+# 提示词。只存文本不存图片；缺少本节配置时整体关闭，清理直接删目录即可。
+rejects:
+  enabled: true
+  dir: cache/rejects              # 相对项目根目录；文件名为 rejects-YYYYMMDD.jsonl
+
+# ===== 全局快捷键（Windows 系统级，不切窗口就能用）=====
+# 只在 Windows 生效；某个组合被别的程序占用时，那一个失效并在日志里说明，
+# 其余照常工作，不影响程序启动。留空("")或 null 表示不注册该动作。
+# 写法：修饰键 + 一个主键，如 ctrl+alt+s。修饰键可用 ctrl/alt/shift/win。
+# 改完要重启程序才生效（注册发生在启动时）。
+hotkeys:
+  toggle: "ctrl+alt+s"      # 开始 / 暂停 透明实时阅读
+  reselect: "ctrl+alt+1"    # 重新框选阅读区域
+  refresh: "ctrl+alt+2"     # 刷新当前页（重新识别）
+  settings: "ctrl+alt+3"    # 回到设置页
+  leave: "ctrl+alt+4"       # 退出透明阅读，回到设置页
+
+# ===== 导出 =====
+export:
+  dir: outputs             # 译文对照导出的存放目录（相对项目根目录）
+  drop_noise: true         # 丢掉纯标点/符号碎片（OCR 常把边框线、省略号当文字）
+  timestamp_name: true     # 文件名带时间戳，避免多次导出互相覆盖
+
+# ===== 排版 / 渲染 =====
+render:
+  font_path: C:/Windows/Fonts/msyh.ttc   # 中文字体（可换成思源黑体 SourceHanSans）
+  min_font_size: 10
+  line_gap: 1.2
+  font_scale: 1.0          # 字号缩放（0.5~2.0）；>1 让中文更大，可能超出气泡范围
+  color: "#000000"         # 固定译文颜色；auto_color 打开时该项不生效
+  auto_color: true         # 逐块按背景明暗自动选深/浅字色，背景复杂时靠它才看得清
+  stroke_ratio: 0.08       # 描边宽度占字号比例（0 关闭）；描边色自动取字色反色
