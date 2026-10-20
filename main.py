@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""漫画实时翻译 —— 程序入口。
+"""语联世界 —— 程序入口。
 
 单图模式：
     python main.py --image 原图.png --out 输出.png --provider mock
@@ -35,7 +35,7 @@ def load_config(path="config.yaml"):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="漫画实时翻译")
+    ap = argparse.ArgumentParser(description="语联世界")
     ap.add_argument("--image", default=None, help="输入漫画原图路径（单图模式）")
     ap.add_argument("--capture", action="store_true", help="实时抓屏模式")
     ap.add_argument("--gui", action="store_true", help="启动原生设置页与透明实时阅读")

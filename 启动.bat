@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
 
-title 漫画实时翻译 - 启动中
+title 语联世界 - 启动中
 
 rem Prefer the interpreter that already has the deps installed.
 rem Order: conda env, project venv, .venv, then PATH python.

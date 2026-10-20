@@ -31,7 +31,7 @@ def run_gui(cfg, web_panel=False):
                 return
             # 关窗即退出程序，先确认一次；透明阅读里点「退出」只是回设置页，不会走到这里。
             answer = QMessageBox.question(
-                self, "退出漫画翻译", "确定要退出吗？\n退出后需要重新框选阅读区域。",
+                self, "退出语联世界", "确定要退出吗？\n退出后需要重新框选阅读区域。",
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if answer != QMessageBox.Yes:
                 event.ignore()
@@ -45,7 +45,7 @@ def run_gui(cfg, web_panel=False):
     bridge = Bridge(cfg, panel=view)
     controller = RealtimeController(bridge, view, cfg)
     if web_panel:
-        view.setWindowTitle("漫画翻译 · 网页调试面板")
+        view.setWindowTitle("语联世界 · 网页调试面板")
         view.resize(1000, 720)
         channel = QWebChannel()
         channel.registerObject("bridge", bridge)
