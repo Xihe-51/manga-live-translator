@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
 
-title 漫画实时翻译 - 单图处理
+title 语联世界 - 单图处理
 
 rem Prefer the interpreter that already has the deps installed.
 set "PY="

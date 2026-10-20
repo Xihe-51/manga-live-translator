@@ -1,4 +1,4 @@
-// 漫画实时翻译 —— 面板交互脚本（通过 QWebChannel 调用 Python 引擎）
+// 语联世界 —— 面板交互脚本（通过 QWebChannel 调用 Python 引擎）
 let bridge = null;
 
 function $(id) { return document.getElementById(id); }

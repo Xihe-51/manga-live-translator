@@ -705,7 +705,7 @@ class NativePanel(QWidget):
         self._ready = False
         self._busy = False
         self._realtime = False
-        self.setWindowTitle("漫画翻译 · 设置与调试")
+        self.setWindowTitle("语联世界 · 设置与调试")
         self.setStyleSheet(_DARK_QSS)
         self.resize(820, 680)
         layout = QVBoxLayout(self)
